@@ -3,9 +3,78 @@
 
 <head>
 </head>
+
 <body>
     <div id="svg-container">
         <object id="svg-object" type="image/svg+xml" data="./one.svg"></object>
     </div>
+    <!-- add toggle between one.css and one.erase.css -->
+    <div id="ui">
+        <button id="toggle">Toggle</button>
+    </div>
+
+
+
+    <script>
+        function reloadSVG(svgId, svgPath, cssPath) {
+            // Remove the old SVG
+            var oldSVG = document.getElementById(svgId);
+            if (oldSVG) {
+                oldSVG.parentNode.removeChild(oldSVG);
+            }
+
+            // Fetch the new SVG
+            fetch(svgPath)
+                .then(response => response.text())
+                .then(data => {
+                    // Parse the SVG
+                    var parser = new DOMParser();
+                    var svg = parser.parseFromString(data, 'image/svg+xml').documentElement;
+
+                    // Set the ID on the new SVG
+                    svg.id = svgId;
+
+                    // Add the new SVG to the svg-container
+                    let svgContainer = document.getElementById('svg-container');
+                    svgContainer.appendChild(svg);
+
+                    // Add the new stylesheet inside the <defs> tag
+                    let styleSheetLink = svg.querySelector('link');
+                    styleSheetLink.href = cssPath;
+                    let defs = svg.querySelector('defs');
+                    defs.appendChild(styleSheetLink);
+                    console.log('toggled stylesheet to ' + styleSheetLink.href);
+                });
+        }
+
+        /**
+         * Reloads the stylesheet in the SVG object by removing the old one and adding a new one.
+         * @param {string} stylesheetPath The path to the new stylesheet.
+         */
+        function reloadStylesheet(stylesheetPath) {
+            // Get the SVG object
+            var svgObject = document.getElementById('svg-object');
+
+            // Get the SVG document
+            var svgDocument = svgObject.contentDocument;
+
+            // Remove the old stylesheet
+            let oldStyleSheet = svgDocument.querySelector('defs link');
+            
+            // Add the new stylesheet inside the <defs> tag
+            let newStyleSheet = svgDocument.createElement('link');
+            newStyleSheet.href = stylesheetPath;
+            svgDocument.querySelector('defs').appendChild(newStyleSheet);
+
+            // Reload the SVG
+            reloadSVG('svg-object', './one.svg', stylesheetPath);
+        }
+
+        let toggle = document.getElementById('toggle');
+        toggle.addEventListener('click', function () {
+            reloadStylesheet('./one-erase.css');
+        });
+    </script>
 </body>
+
 </html>
