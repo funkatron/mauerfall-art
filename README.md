@@ -11,7 +11,7 @@ This repository is dedicated to storing the artwork for the Dead Agent - Mauerfa
 
 ## Introduction
 
-The Dead Agent - Mauerfall album is a collection of electronic music created by [artist/band name]. This repository serves as a centralized location for storing the artwork associated with the album.
+The Dead Agent - Mauerfall is an album of remixes of Dead Agent songs by other artists. This repository serves as a centralized location for storing the artwork associated with the album.
 
 ## Usage
 
