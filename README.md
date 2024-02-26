@@ -11,10 +11,6 @@ This repository is dedicated to storing the artwork for the Dead Agent - Mauerfa
 
 ## Introduction
 
-_the iframe code below may not work in some environments_
-
-<iframe style="border: 0; width: 100%; height: 120px;" src="https://bandcamp.com/EmbeddedPlayer/album=1083192819/size=large/bgcol=333333/linkcol=ffffff/tracklist=false/artwork=small/transparent=true/" seamless><a href="https://music.deadagent.net/album/mauerfall-vco-berlin-deconstructed">Mauerfall: VCO Berlin Deconstructed by Dead Agent</a></iframe>
-
 [Dead Agent - Mauerfall](https://deadagent.bandcamp.com/album/mauerfall-vco-berlin-deconstructed) is an album of remixes of [Dead Agent](https://deadagent.net) songs by other artists. This repository serves as a centralized location for storing the artwork associated with the album.
 
 ## Usage
