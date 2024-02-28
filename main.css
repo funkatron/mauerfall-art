@@ -1,0 +1,37 @@
+@import url('https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css');
+@import url('https://cdnjs.cloudflare.com/ajax/libs/Iosevka/11.1.1/iosevka/iosevka.min.css');
+
+* {
+    font-family: 'Iosevka', monospace;
+}
+body {
+    background-color: white;
+    color: black;
+    padding: 0;
+    margin: 0;
+}
+a {
+    color: black;
+}
+a:hover {
+    color: black;
+}
+a:visited {
+    color: black;
+}
+a:active {
+    color: black;
+}
+a:link {
+    color: black;
+}
+
+label {
+    font-size: small;
+    font-weight: bold;
+    display: inline-block;
+}
+
+#control-panel {
+    font-size: small;
+}

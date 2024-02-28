@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html>
+<title>Mauerfall Cover Art</title>
+
+<head>
+    <link rel="stylesheet" href="../main.css">
+    <style>
+        #svg-object {
+            filter: url(#displacement-map-shader) url(#color-matrix-shader) url(#glitch-turbulence);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="svg-container">
+        <object id="svg-object" type="image/svg+xml" data="./two.svg"></object>
+    </div>
+    <svg xmlns="http://www.w3.org/2000/svg" version="1.1">
+        <defs>
+            <filter id="glitch-turbulence" x="0" y="0">
+                <feTurbulence id="turbulence" baseFrequency="0.001" numOctaves="100" result="noise" seed="245" />
+                <feDisplacementMap in="SourceGraphic" in2="noise" scale="2" xChannelSelector="R" yChannelSelector="G" />
+            </filter>
+        </defs>
+    </svg>
+
+    <svg xmlns="http://www.w3.org/2000/svg" version="1.1">
+        <defs>
+            <filter id="color-matrix-shader">
+                <feColorMatrix type="matrix" values="1   0   0   0   0
+                      0   1   0   0   0
+                      0   0   1   0   0
+                      0.1 0   0   1   0" />
+            </filter>
+        </defs>
+    </svg>
+
+    <svg xmlns="http://www.w3.org/2000/svg" version="1.1">
+        <defs>
+            <filter id="displacement-map-shader">
+                <feDisplacementMap in="SourceGraphic" in2="elevation" scale="500" xChannelSelector="R" yChannelSelector="G" />
+            </filter>
+        </defs>
+    </svg>
+
+    <script>
+        const blendModes = [
+            "normal",
+            "multiply",
+            "screen",
+            "overlay",
+            "darken",
+            "lighten",
+            "color-dodge",
+            "color-burn",
+            "hard-light",
+            "soft-light",
+            "difference",
+            "exclusion",
+            "hue",
+            "saturation",
+            "color",
+            "luminosity",
+        ]
+
+        const channelSelectors = [
+            "R",
+            "G",
+            "B",
+            "A",
+        ]
+
+        function animateDisplacementMap(run = true) {
+            // animate the displacement map effect by changing the scale attribute of the feDisplacementMap element
+            const displacementMapShader = document.getElementById("displacement-map-shader");
+            if (!displacementMapShader) {
+                return;
+            }
+            const feDisplacementMap = displacementMapShader.querySelector("feDisplacementMap");
+
+            let scale = 0;
+            let animationIntervalId = setInterval(() => {
+                scale = (scale + 1) % 500;
+                feDisplacementMap.setAttribute("scale", scale);
+            }, 100);
+            if (!run) {
+                // stop the animation
+                clearInterval(animationIntervalId);
+                feDisplacementMap.setAttribute("scale", 0);
+            }
+        }
+    </script>
+
+<script>
+    function addUI() {
+        
+        // put the slider into a control panel that hovers over the bottom
+        // right corner of the window. Each input should have a small text label
+        const controlPanel = document.createElement("div");
+        controlPanel.id = "control-panel";
+        controlPanel.style.position = "fixed";
+        controlPanel.style.bottom = "0";
+        controlPanel.style.right = "0";
+        controlPanel.style.padding = "10px";
+            controlPanel.style.backgroundColor = "rgba(255, 255, 255, 0.5)";
+            controlPanel.style.border = "1px solid black";
+            controlPanel.style.borderRadius = "5px";
+            controlPanel.style.zIndex = "1000";
+            
+            // add a label to the slider.
+            const displacementScaleInputLabel = document.createElement("label");
+            displacementScaleInputLabel.htmlFor = "displacement-scale";
+            displacementScaleInputLabel.innerText = "Displacement Scale";
+            displacementScaleInputLabel.style.marginRight = "10px";
+            displacementScaleInputLabel.style.display = "block";
+            
+            // whe the value changes, the scale attribute of the shader is updated.
+            // create a UI to control the displacement effect with a slider.
+            const displacementScaleInput = document.createElement("input");
+            displacementScaleInput.id = "displacement-scale";
+            displacementScaleInput.type = "range";
+            displacementScaleInputLabel.style.display = "block";
+            displacementScaleInput.min = 0;
+            displacementScaleInput.max = 500;
+            displacementScaleInput.value = 0;
+            displacementScaleInput.addEventListener("input", (event) => {
+                const scale = event.target.value;
+                const shader = document.getElementById("displacement-map-shader");
+                const feDisplacementMap = shader.querySelector("feDisplacementMap");
+                feDisplacementMap.setAttribute("scale", scale);
+            });
+
+
+            // add inputs for xChannelSelector and yChannelSelector. These should be dropdown menus with options for R, G, B, and A
+            const xChannelSelectorInput = document.createElement("select");
+            xChannelSelectorInput.id = "x-channel-selector";
+            xChannelSelectorInput.style.display = "block";
+
+            let option = document.createElement("option");
+            for (let i = 0; i < channelSelectors.length; i++) {
+                option = document.createElement("option");
+                option.value = channelSelectors[i];
+                option.text = channelSelectors[i];
+                xChannelSelectorInput.addEventListener("change", (event) => {
+                    const value = event.target.value;
+                    const shader = document.getElementById("shader");
+                    const feDisplacementMap = shader.querySelector("feDisplacementMap");
+                    feDisplacementMap.setAttribute("xChannelSelector", value);
+                });
+                xChannelSelectorInput.appendChild(option);
+            }
+
+
+            // add a label
+            const xChannelSelectorLabel = document.createElement("label");
+            xChannelSelectorLabel.htmlFor = "x-channel-selector";
+            xChannelSelectorLabel.innerText = "X Channel Selector";
+            xChannelSelectorLabel.style.marginRight = "10px";
+            xChannelSelectorLabel.style.display = "block";
+
+
+            // add input for yChannelSelector
+            const yChannelSelectorInput = document.createElement("select");
+            yChannelSelectorInput.id = "x-channel-selector";
+            yChannelSelectorInput.style.display = "block";
+
+            option = document.createElement("option");
+            for (let i = 0; i < channelSelectors.length; i++) {
+                option = document.createElement("option");
+                option.value = channelSelectors[i];
+                option.text = channelSelectors[i];
+                yChannelSelectorInput.addEventListener("change", (event) => {
+                    const value = event.target.value;
+                    const shader = document.getElementById("shader");
+                    const feDisplacementMap = shader.querySelector("feDisplacementMap");
+                    feDisplacementMap.setAttribute("xChannelSelector", value);
+                });
+                yChannelSelectorInput.appendChild(option);
+            }
+
+            // add a label
+            const yChannelSelectorLabel = document.createElement("label");
+            yChannelSelectorLabel.htmlFor = "y-channel-selector";
+            yChannelSelectorLabel.innerText = "Y Channel Selector";
+            yChannelSelectorLabel.style.marginRight = "10px";
+            yChannelSelectorLabel.style.display = "block";
+
+
+            // add a blend mode selector
+            const blendModeSelector = document.createElement("select");
+            blendModeSelector.id = "blend-mode-selector";
+            blendModeSelector.style.display = "block";
+            for (let i = 0; i < blendModes.length; i++) {
+                const option = document.createElement("option");
+                option.value = blendModes[i];
+                option.text = blendModes[i];
+                blendModeSelector.appendChild(option);
+            }
+            // initialize the blend mode to multiply
+            const svg = document.getElementById("svg-object");
+            svg.style.mixBlendMode = "lighten";
+            blendModeSelector.value = "lighten";
+
+            // when the value changes, update the mix-blend-mode style of the svg
+            blendModeSelector.addEventListener("input", (event) => {
+                const value = event.target.value;
+                const svg = document.getElementById("svg-object");
+                svg.style.mixBlendMode = value;
+            });
+
+            const blendModeLabel = document.createElement("label");
+            blendModeLabel.htmlFor = "blend-mode-selector";
+            blendModeLabel.innerText = "Blend Mode";
+            blendModeLabel.style.marginRight = "10px";
+            blendModeLabel.style.display = "block";
+
+
+            // // add a toggle to turn the auto-animation on and off
+            // const autoAnimateToggle = document.createElement("input");
+            // autoAnimateToggle.id = "auto-animate";
+            // autoAnimateToggle.type = "checkbox";
+            // autoAnimateToggle.checked = true;
+            // autoAnimateToggle.addEventListener("change", (event) => {
+            //     if (event.target.checked) {
+            //         animateDisplacementMap();
+            //     } else {
+            //         animateDisplacementMap(run = false);
+            //     }
+            // });
+            // const autoAnimateLabel = document.createElement("label");
+            // autoAnimateLabel.htmlFor = "auto-animate";
+            // autoAnimateLabel.innerText = "Auto Animate";
+            // autoAnimateLabel.style.marginRight = "10px";
+            // autoAnimateLabel.style.marginLeft = "10px";
+
+
+            controlPanel.appendChild(displacementScaleInputLabel);
+            controlPanel.appendChild(displacementScaleInputLabel);
+            controlPanel.appendChild(displacementScaleInput);
+
+            controlPanel.appendChild(xChannelSelectorLabel);
+            controlPanel.appendChild(xChannelSelectorInput);
+
+            controlPanel.appendChild(yChannelSelectorLabel);
+            controlPanel.appendChild(yChannelSelectorInput);
+
+            controlPanel.appendChild(blendModeLabel);
+            controlPanel.appendChild(blendModeSelector);
+
+            // controlPanel.appendChild(autoAnimateToggle);
+            // controlPanel.appendChild(autoAnimateLabel);
+
+            document.body.appendChild(controlPanel);
+        }
+
+    </script>
+
+    <script>
+        addUI();
+        animateDisplacementMap();
+    </script>
+
+    <script>
+        // play a video in the background
+        const video = document.createElement("video");
+        video.src = "./Screen Recording 2024-02-04 at 10.25.37 PM.mov";
+        video.autoplay = true;
+        video.loop = true;
+        video.muted = true;
+        video.style.position = "fixed";
+        video.style.top = "0";
+        video.style.left = "0";
+        video.style.width = "100%";
+        video.style.height = "100%";
+        video.style.objectFit = "cover";
+        video.style.zIndex = "-1000";
+        document.body.appendChild(video);
+    </script>
+</body>
+
+</html>
