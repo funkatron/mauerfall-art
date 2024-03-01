@@ -24,6 +24,7 @@ a:active {
 }
 a:link {
     color: black;
+    border-bottom: 1px solid black;
 }
 
 label {
