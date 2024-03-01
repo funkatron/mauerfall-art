@@ -1,25 +1,26 @@
 <!DOCTYPE html>
 <html>
-<title>Mauerfall Cover Art</title>
+<title>Mauerfall Cover Art: Displacement and Turbulence</title>
 
 <head>
+    <!-- the shared CSS for all examples -->
     <link rel="stylesheet" href="../main.css">
-    <style>
-        #svg-object {
-            filter: url(#displacement-map-shader) url(#color-matrix-shader) url(#glitch-turbulence);
-        }
-    </style>
 </head>
 
 <body>
     <div id="svg-container">
-        <object id="svg-object" type="image/svg+xml" data="./two.svg"></object>
+        <object id="svg-object" type="image/svg+xml" data="./two.svg"
+            style="filter:
+                url(#color-matrix-shader)
+                url(#displacement-map-shader)
+                url(#glitch-turbulence)"
+        ></object>
     </div>
     <svg xmlns="http://www.w3.org/2000/svg" version="1.1">
         <defs>
             <filter id="glitch-turbulence" x="0" y="0">
-                <feTurbulence id="turbulence" baseFrequency="0.001" numOctaves="100" result="noise" seed="245" />
-                <feDisplacementMap in="SourceGraphic" in2="noise" scale="2" xChannelSelector="R" yChannelSelector="G" />
+                <feTurbulence id="turbulence" baseFrequency="0.0001" numOctaves="100" result="elevation" seed="245" />
+                <feDisplacementMap in="SourceGraphic" in2="noise" scale="100" xChannelSelector="R" yChannelSelector="A" />
             </filter>
         </defs>
     </svg>
@@ -38,7 +39,8 @@
     <svg xmlns="http://www.w3.org/2000/svg" version="1.1">
         <defs>
             <filter id="displacement-map-shader">
-                <feDisplacementMap in="SourceGraphic" in2="elevation" scale="500" xChannelSelector="R" yChannelSelector="G" />
+                <feDisplacementMap in="SourceGraphic" in2="elevation" scale="0" xChannelSelector="R"
+                    yChannelSelector="G" />
             </filter>
         </defs>
     </svg>
@@ -71,49 +73,78 @@
         ]
 
         function animateDisplacementMap(run = true) {
-            // animate the displacement map effect by changing the scale attribute of the feDisplacementMap element
+            // if we have been moving the input for this value, we should stop the animation
+            // and reset the value to 0
+            if (!run) {
+                const displacementMapShader = document.getElementById("displacement-map-shader");
+                if (!displacementMapShader) {
+                    return;
+                }
+                const feDisplacementMap = displacementMapShader.querySelector("feDisplacementMap");
+                feDisplacementMap.setAttribute("scale", 0);
+                return;
+            }
+
+            // animate the displacement map effect by changing the in2 attribute of the feDisplacementMap element
             const displacementMapShader = document.getElementById("displacement-map-shader");
             if (!displacementMapShader) {
                 return;
             }
             const feDisplacementMap = displacementMapShader.querySelector("feDisplacementMap");
 
-            let scale = 0;
+            // every 0.5 secongs, change the in2 attribute to something else
+            let in2 = "elevation";
             let animationIntervalId = setInterval(() => {
-                scale = (scale + 1) % 500;
-                feDisplacementMap.setAttribute("scale", scale);
-            }, 100);
+                in2 = in2 === "elevation" ? "noise" : "elevation";
+                feDisplacementMap.setAttribute("in2", in2);
+                console.log('switching in2 to', in2);
+            }, 500);
+        }
+
+        function animateTurbulence(run = true) {
+            // animate the turbulence effect by changing the baseFrequency attribute of the feTurbulence element
+            const turbulenceFilter = document.getElementById("glitch-turbulence");
+            if (!turbulenceFilter) {
+                return;
+            }
+            const feTurbulence = turbulenceFilter.querySelector("feTurbulence");
+
+            let baseFrequency = 0.00001;
+            let animationIntervalId = setInterval(() => {
+                baseFrequency = (baseFrequency + 0.0000001) % 0.1;
+                feTurbulence.setAttribute("baseFrequency", baseFrequency);
+            }, 0.1);
             if (!run) {
                 // stop the animation
                 clearInterval(animationIntervalId);
-                feDisplacementMap.setAttribute("scale", 0);
+                feTurbulence.setAttribute("baseFrequency", 0.001);
             }
         }
     </script>
 
-<script>
-    function addUI() {
-        
-        // put the slider into a control panel that hovers over the bottom
-        // right corner of the window. Each input should have a small text label
-        const controlPanel = document.createElement("div");
-        controlPanel.id = "control-panel";
-        controlPanel.style.position = "fixed";
-        controlPanel.style.bottom = "0";
-        controlPanel.style.right = "0";
-        controlPanel.style.padding = "10px";
+    <script>
+        function addUI() {
+
+            // put the slider into a control panel that hovers over the bottom
+            // right corner of the window. Each input should have a small text label
+            const controlPanel = document.createElement("div");
+            controlPanel.id = "control-panel";
+            controlPanel.style.position = "fixed";
+            controlPanel.style.bottom = "0";
+            controlPanel.style.right = "0";
+            controlPanel.style.padding = "10px";
             controlPanel.style.backgroundColor = "rgba(255, 255, 255, 0.5)";
             controlPanel.style.border = "1px solid black";
             controlPanel.style.borderRadius = "5px";
             controlPanel.style.zIndex = "1000";
-            
+
             // add a label to the slider.
             const displacementScaleInputLabel = document.createElement("label");
             displacementScaleInputLabel.htmlFor = "displacement-scale";
             displacementScaleInputLabel.innerText = "Displacement Scale";
             displacementScaleInputLabel.style.marginRight = "10px";
             displacementScaleInputLabel.style.display = "block";
-            
+
             // whe the value changes, the scale attribute of the shader is updated.
             // create a UI to control the displacement effect with a slider.
             const displacementScaleInput = document.createElement("input");
@@ -130,7 +161,6 @@
                 feDisplacementMap.setAttribute("scale", scale);
             });
 
-
             // add inputs for xChannelSelector and yChannelSelector. These should be dropdown menus with options for R, G, B, and A
             const xChannelSelectorInput = document.createElement("select");
             xChannelSelectorInput.id = "x-channel-selector";
@@ -146,7 +176,7 @@
                     const shader = document.getElementById("shader");
                     const feDisplacementMap = shader.querySelector("feDisplacementMap");
                     feDisplacementMap.setAttribute("xChannelSelector", value);
-                });
+                });                
                 xChannelSelectorInput.appendChild(option);
             }
 
@@ -185,6 +215,19 @@
             yChannelSelectorLabel.style.marginRight = "10px";
             yChannelSelectorLabel.style.display = "block";
 
+            // add an input for the turbulence filter
+            const turbulenceScaleInput = document.createElement("input");
+            turbulenceScaleInput.id = "turbulence-scale";
+            turbulenceScaleInput.type = "range";
+            turbulenceScaleInput.min = 0;
+            turbulenceScaleInput.max = 1000;
+            turbulenceScaleInput.value = 0;
+            turbulenceScaleInput.addEventListener("input", (event) => {
+                const scale = event.target.value;
+                const shader = document.getElementById("glitch-turbulence");
+                const feDisplacementMap = shader.querySelector("feDisplacementMap");
+                feDisplacementMap.setAttribute("scale", scale);
+            });
 
             // add a blend mode selector
             const blendModeSelector = document.createElement("select");
@@ -196,10 +239,10 @@
                 option.text = blendModes[i];
                 blendModeSelector.appendChild(option);
             }
-            // initialize the blend mode to multiply
+            // initialize the blend mode to normal
             const svg = document.getElementById("svg-object");
-            svg.style.mixBlendMode = "lighten";
-            blendModeSelector.value = "lighten";
+            svg.style.mixBlendMode = "normal";
+            blendModeSelector.value = "normal";
 
             // when the value changes, update the mix-blend-mode style of the svg
             blendModeSelector.addEventListener("input", (event) => {
@@ -215,25 +258,6 @@
             blendModeLabel.style.display = "block";
 
 
-            // // add a toggle to turn the auto-animation on and off
-            // const autoAnimateToggle = document.createElement("input");
-            // autoAnimateToggle.id = "auto-animate";
-            // autoAnimateToggle.type = "checkbox";
-            // autoAnimateToggle.checked = true;
-            // autoAnimateToggle.addEventListener("change", (event) => {
-            //     if (event.target.checked) {
-            //         animateDisplacementMap();
-            //     } else {
-            //         animateDisplacementMap(run = false);
-            //     }
-            // });
-            // const autoAnimateLabel = document.createElement("label");
-            // autoAnimateLabel.htmlFor = "auto-animate";
-            // autoAnimateLabel.innerText = "Auto Animate";
-            // autoAnimateLabel.style.marginRight = "10px";
-            // autoAnimateLabel.style.marginLeft = "10px";
-
-
             controlPanel.appendChild(displacementScaleInputLabel);
             controlPanel.appendChild(displacementScaleInputLabel);
             controlPanel.appendChild(displacementScaleInput);
@@ -244,26 +268,52 @@
             controlPanel.appendChild(yChannelSelectorLabel);
             controlPanel.appendChild(yChannelSelectorInput);
 
+            controlPanel.appendChild(turbulenceScaleInput);
+
             controlPanel.appendChild(blendModeLabel);
             controlPanel.appendChild(blendModeSelector);
 
-            // controlPanel.appendChild(autoAnimateToggle);
-            // controlPanel.appendChild(autoAnimateLabel);
-
             document.body.appendChild(controlPanel);
+        }
+
+        function animateColorMatrix() {
+            // animate the color matrix effect by changing the values attribute of the feColorMatrix element
+            const colorMatrixShader = document.getElementById("color-matrix-shader");
+            if (!colorMatrixShader) {
+                return;
+            }
+            const feColorMatrix = colorMatrixShader.querySelector("feColorMatrix");
+
+            let values = [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0];
+            let animationIntervalId = setInterval(() => {
+                // Rotate the values
+                values.unshift(values.pop());
+
+                // Convert the array to a string and set the attribute
+                let valuesStr = values.join('   ');
+                feColorMatrix.setAttribute("values", valuesStr);
+            }, 100);
+
+            if (!run) {
+                // stop the animation
+                clearInterval(animationIntervalId);
+                feColorMatrix.setAttribute("values", "1   0   0   0   0\n0   1   0   0   0\n0   0   1   0   0\n0   0   0   1   0");
+            }
         }
 
     </script>
 
     <script>
         addUI();
+        animateColorMatrix();
         animateDisplacementMap();
+        animateTurbulence();
     </script>
 
     <script>
         // play a video in the background
         const video = document.createElement("video");
-        video.src = "./Screen Recording 2024-02-04 at 10.25.37 PM.mov";
+        video.src = "color-test-video.mp4";
         video.autoplay = true;
         video.loop = true;
         video.muted = true;
