@@ -276,7 +276,7 @@
             document.body.appendChild(controlPanel);
         }
 
-        function animateColorMatrix() {
+        function animateColorMatrix(run = true) {
             // animate the color matrix effect by changing the values attribute of the feColorMatrix element
             const colorMatrixShader = document.getElementById("color-matrix-shader");
             if (!colorMatrixShader) {
